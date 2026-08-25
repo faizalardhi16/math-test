@@ -1,0 +1,10 @@
+{
+  "name": "math-test",
+  "version": "1.0.0",
+  "description": "A small math utility library",
+  "main": "src/math.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
