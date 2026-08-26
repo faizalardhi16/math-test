@@ -1,10 +1,11 @@
 {
-  "name": "math-test",
+  "name": "math-logic",
   "version": "1.0.0",
-  "description": "A small math utility library",
+  "private": true,
+  "description": "Reusable math functions with validated addition",
   "main": "src/math.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "node --test"
-  },
-  "license": "MIT"
+    "test": "node --test test/math.test.js"
+  }
 }
