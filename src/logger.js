@@ -159,13 +159,16 @@ function toMilliseconds(value) {
 function buildErrorRecord(error) {
   try {
     const message = error && error.message ? error.message : String(error);
-    const record = { message: truncateString(String(message)) };
+    const record = {
+      type: error && error.name ? error.name : 'Error',
+      message: truncateString(String(message)),
+    };
     if (error && error.code !== undefined && error.code !== null) {
       record.code = error.code;
     }
     return record;
   } catch (_) {
-    return { message: 'Unknown error' };
+    return { type: 'Error', message: 'Unknown error' };
   }
 }
 
@@ -188,16 +191,22 @@ function createLogger(options = {}) {
     }
   }
 
+  function generateId() {
+    try {
+      return idGenerator();
+    } catch (_) {
+      return `log-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+  }
+
   function start(entryOptions) {
     const opts = entryOptions || {};
 
-    let id;
+    const id = generateId();
     let timestamp;
     try {
-      id = idGenerator();
       timestamp = now();
     } catch (_) {
-      id = `log-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
       timestamp = new Date();
     }
 
@@ -212,12 +221,27 @@ function createLogger(options = {}) {
       input = '[Unavailable]';
     }
 
+    const startRecord = {
+      id,
+      timestamp: toISOString(timestamp),
+      function: action,
+      status: 'started',
+      userId,
+      action,
+    };
+    if (input !== undefined) {
+      startRecord.input = input;
+    }
+    safeWrite(startRecord);
+
     let finalized = false;
 
-    function buildBaseRecord(outcome, duration) {
+    function buildBaseRecord(outcome, duration, endTime) {
       const record = {
         id,
-        timestamp: toISOString(timestamp),
+        timestamp: toISOString(endTime),
+        function: action,
+        status: outcome === 'success' ? 'completed' : 'failed',
         userId,
         action,
         outcome,
@@ -234,19 +258,27 @@ function createLogger(options = {}) {
       userId,
       action,
       input,
-      success() {
+      success(result) {
         if (finalized) return;
         finalized = true;
         const endTime = now();
         const duration = toMilliseconds(endTime) - startTime;
-        safeWrite(buildBaseRecord('success', duration));
+        const record = buildBaseRecord('success', duration, endTime);
+        if (result !== undefined) {
+          try {
+            record.result = summarize(result);
+          } catch (_) {
+            record.result = '[Unavailable]';
+          }
+        }
+        safeWrite(record);
       },
       failure(error) {
         if (finalized) return;
         finalized = true;
         const endTime = now();
         const duration = toMilliseconds(endTime) - startTime;
-        const record = buildBaseRecord('failure', duration);
+        const record = buildBaseRecord('failure', duration, endTime);
         record.error = buildErrorRecord(error);
         safeWrite(record);
       },
@@ -255,7 +287,98 @@ function createLogger(options = {}) {
     return entry;
   }
 
-  return { start };
+  function wrap(fn, options = {}) {
+    if (typeof fn !== 'function') {
+      throw new TypeError('wrap expects a function');
+    }
+    const name = options.name || fn.name || 'anonymous';
+    const summarizeArgs = options.summarizeArgs !== false;
+    const summarizeResult = options.summarizeResult !== false;
+    const extra = options.extra && typeof options.extra === 'object' ? options.extra : {};
+
+    function wrapped(...args) {
+      const id = generateId();
+      let startTime;
+      try {
+        startTime = now();
+      } catch (_) {
+        startTime = new Date();
+      }
+
+      const startRecord = {
+        id,
+        timestamp: toISOString(startTime),
+        function: name,
+        status: 'started',
+      };
+      Object.assign(startRecord, extra);
+      if (summarizeArgs) {
+        try {
+          startRecord.args = summarize(args);
+        } catch (_) {
+          startRecord.args = '[Unavailable]';
+        }
+      }
+      safeWrite(startRecord);
+
+      function buildFinalRecord(status, errorOrResult) {
+        let endTime;
+        try {
+          endTime = now();
+        } catch (_) {
+          endTime = new Date();
+        }
+        const record = {
+          id,
+          timestamp: toISOString(endTime),
+          function: name,
+          status,
+        };
+        Object.assign(record, extra);
+        record.duration = toMilliseconds(endTime) - toMilliseconds(startTime);
+        if (status === 'completed') {
+          record.outcome = 'success';
+          if (summarizeResult && errorOrResult !== undefined) {
+            try {
+              record.result = summarize(errorOrResult);
+            } catch (_) {
+              record.result = '[Unavailable]';
+            }
+          }
+        } else {
+          record.outcome = 'failure';
+          record.error = buildErrorRecord(errorOrResult);
+        }
+        return record;
+      }
+
+      try {
+        const result = fn.apply(this, args);
+        if (result && typeof result.then === 'function') {
+          return result.then(
+            (value) => {
+              safeWrite(buildFinalRecord('completed', value));
+              return value;
+            },
+            (error) => {
+              safeWrite(buildFinalRecord('failed', error));
+              throw error;
+            }
+          );
+        }
+        safeWrite(buildFinalRecord('completed', result));
+        return result;
+      } catch (error) {
+        safeWrite(buildFinalRecord('failed', error));
+        throw error;
+      }
+    }
+
+    Object.defineProperty(wrapped, 'name', { value: name, configurable: true });
+    return wrapped;
+  }
+
+  return { start, wrap, summarize };
 }
 
 async function runWithLogging(logger, options, fn) {
@@ -269,7 +392,7 @@ async function runWithLogging(logger, options, fn) {
   try {
     const result = await fn(entry);
     try {
-      entry.success();
+      entry.success(result);
     } catch (_) {
       // Ignore logging finalization errors.
     }
@@ -284,9 +407,14 @@ async function runWithLogging(logger, options, fn) {
   }
 }
 
+function withLogging(logger, fn, options) {
+  return logger.wrap(fn, options);
+}
+
 module.exports = {
   createLogger,
   runWithLogging,
+  withLogging,
   summarizeInput,
   DEFAULT_SENSITIVE_KEYS,
 };

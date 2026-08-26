@@ -1,5 +1,9 @@
 'use strict';
 
+const { createLogger } = require('./logger');
+
+const logger = createLogger();
+
 function add(a, b) {
   return a + b;
 }
@@ -55,7 +59,7 @@ function fibonacci(n) {
   return curr;
 }
 
-function toFiniteNumber(value) {
+const toFiniteNumber = logger.wrap(function toFiniteNumber(value) {
   if (typeof value === 'number') {
     return Number.isFinite(value) ? value : NaN;
   }
@@ -64,7 +68,7 @@ function toFiniteNumber(value) {
     return Number.isFinite(num) ? num : NaN;
   }
   return NaN;
-}
+}, { name: 'toFiniteNumber' });
 
 function modulo(a, b) {
   const dividend = toFiniteNumber(a);
@@ -78,13 +82,13 @@ function modulo(a, b) {
 }
 
 module.exports = {
-  add,
-  subtract,
-  multiply,
-  divide,
-  isEven,
-  isOdd,
-  factorial,
-  fibonacci,
-  modulo
+  add: logger.wrap(add, { name: 'add' }),
+  subtract: logger.wrap(subtract, { name: 'subtract' }),
+  multiply: logger.wrap(multiply, { name: 'multiply' }),
+  divide: logger.wrap(divide, { name: 'divide' }),
+  isEven: logger.wrap(isEven, { name: 'isEven' }),
+  isOdd: logger.wrap(isOdd, { name: 'isOdd' }),
+  factorial: logger.wrap(factorial, { name: 'factorial' }),
+  fibonacci: logger.wrap(fibonacci, { name: 'fibonacci' }),
+  modulo: logger.wrap(modulo, { name: 'modulo' }),
 };
