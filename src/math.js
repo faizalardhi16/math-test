@@ -1,7 +1,37 @@
 'use strict';
 
+const { createLogger } = require('./logger');
+
+const logger = createLogger();
+
+function _toFiniteNumber(value) {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : NaN;
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : NaN;
+  }
+  return NaN;
+}
+
+const toFiniteNumber = logger.wrap(_toFiniteNumber, { name: 'toFiniteNumber' });
+
 function add(a, b) {
-  return a + b;
+  const numA = _toFiniteNumber(a);
+  const numB = _toFiniteNumber(b);
+
+  if (!Number.isFinite(numA) || !Number.isFinite(numB)) {
+    throw new TypeError('add expects two numeric values');
+  }
+
+  const sum = numA + numB;
+
+  if (!Number.isFinite(sum)) {
+    return sum > 0 ? Number.MAX_VALUE : -Number.MAX_VALUE;
+  }
+
+  return sum === 0 ? 0 : sum;
 }
 
 function subtract(a, b) {
@@ -55,13 +85,25 @@ function fibonacci(n) {
   return curr;
 }
 
+function modulo(a, b) {
+  const dividend = toFiniteNumber(a);
+  const divisor = toFiniteNumber(b);
+
+  if (!Number.isFinite(dividend) || !Number.isFinite(divisor) || divisor === 0) {
+    return 0;
+  }
+
+  return dividend % divisor;
+}
+
 module.exports = {
-  add,
-  subtract,
-  multiply,
-  divide,
-  isEven,
-  isOdd,
-  factorial,
-  fibonacci
+  add: logger.wrap(add, { name: 'add' }),
+  subtract: logger.wrap(subtract, { name: 'subtract' }),
+  multiply: logger.wrap(multiply, { name: 'multiply' }),
+  divide: logger.wrap(divide, { name: 'divide' }),
+  isEven: logger.wrap(isEven, { name: 'isEven' }),
+  isOdd: logger.wrap(isOdd, { name: 'isOdd' }),
+  factorial: logger.wrap(factorial, { name: 'factorial' }),
+  fibonacci: logger.wrap(fibonacci, { name: 'fibonacci' }),
+  modulo: logger.wrap(modulo, { name: 'modulo' }),
 };
