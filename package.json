@@ -2,10 +2,10 @@
   "name": "math-logic",
   "version": "1.0.0",
   "private": true,
-  "description": "Reusable math functions with validated addition",
+  "description": "Reusable math functions with validated addition and monthly report feature",
   "main": "src/math.js",
   "type": "commonjs",
   "scripts": {
-    "test": "node --test test/math.test.js"
+    "test": "node --test test/"
   }
 }
