@@ -4,6 +4,7 @@ const monthlyReport = require('./monthly-report');
 const idr = require('./idr');
 const businessCalendar = require('./business-calendar');
 const pdf = require('./pdf');
+const weight = require('./weight');
 
 module.exports = {
   ...monthlyReport,
@@ -13,4 +14,5 @@ module.exports = {
   ...businessCalendar,
   buildMonthlyReportPdf: pdf.buildMonthlyReportPdf,
   generateMonthlyReportPdf: pdf.generateMonthlyReportPdf,
+  gramsToKilograms: weight.gramsToKilograms,
 };
