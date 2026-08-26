@@ -79,3 +79,39 @@ test('fibonacci returns the nth Fibonacci number', () => {
 test('fibonacci throws an Error for negative numbers', () => {
   assert.throws(() => math.fibonacci(-1), /negative/);
 });
+
+test('modulo returns the remainder of two numbers', () => {
+  assert.equal(math.modulo(10, 3), 1);
+  assert.equal(math.modulo(7, 3), 1);
+  assert.equal(math.modulo(5.5, 2), 1.5);
+});
+
+test('modulo accepts numeric strings', () => {
+  assert.equal(math.modulo('10', '3'), 1);
+  assert.equal(math.modulo('5.5', '2'), 1.5);
+});
+
+test('modulo returns 0 for invalid numeric inputs', () => {
+  assert.equal(math.modulo('abc', 3), 0);
+  assert.equal(math.modulo(10, 'abc'), 0);
+  assert.equal(math.modulo(NaN, 3), 0);
+  assert.equal(math.modulo(10, Infinity), 0);
+  assert.equal(math.modulo('', 3), 0);
+  assert.equal(math.modulo(null, 3), 0);
+});
+
+test('modulo returns 0 when divisor is 0', () => {
+  assert.equal(math.modulo(10, 0), 0);
+  assert.equal(math.modulo('10', '0'), 0);
+});
+
+test('modulo returns a result with the same sign as the dividend', () => {
+  assert.equal(math.modulo(-7, 3), -1);
+  assert.equal(math.modulo(-5.5, 2), -1.5);
+  assert.equal(math.modulo(7, -3), 1);
+});
+
+test('modulo returns a number', () => {
+  assert.equal(typeof math.modulo(10, 3), 'number');
+  assert.equal(typeof math.modulo('10', '3'), 'number');
+});

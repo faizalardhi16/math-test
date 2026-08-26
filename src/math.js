@@ -55,6 +55,28 @@ function fibonacci(n) {
   return curr;
 }
 
+function toFiniteNumber(value) {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : NaN;
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : NaN;
+  }
+  return NaN;
+}
+
+function modulo(a, b) {
+  const dividend = toFiniteNumber(a);
+  const divisor = toFiniteNumber(b);
+
+  if (!Number.isFinite(dividend) || !Number.isFinite(divisor) || divisor === 0) {
+    return 0;
+  }
+
+  return dividend % divisor;
+}
+
 module.exports = {
   add,
   subtract,
@@ -63,5 +85,6 @@ module.exports = {
   isEven,
   isOdd,
   factorial,
-  fibonacci
+  fibonacci,
+  modulo
 };
