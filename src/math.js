@@ -4,8 +4,39 @@ const { createLogger } = require('./logger');
 
 const logger = createLogger();
 
+const toFiniteNumber = logger.wrap(function toFiniteNumber(value) {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : NaN;
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : NaN;
+  }
+  return NaN;
+}, { name: 'toFiniteNumber' });
+
+/**
+ * Adds two numeric values and returns the sum.
+ *
+ * Accepts finite numbers and numeric strings. Throws a TypeError for
+ * missing, null, or non-numeric inputs. If the sum overflows the maximum
+ * finite number, the closest finite approximation is returned.
+ */
 function add(a, b) {
-  return a + b;
+  const numA = toFiniteNumber(a);
+  const numB = toFiniteNumber(b);
+
+  if (!Number.isFinite(numA) || !Number.isFinite(numB)) {
+    throw new TypeError('add expects two numeric values');
+  }
+
+  const sum = numA + numB;
+
+  if (!Number.isFinite(sum)) {
+    return sum > 0 ? Number.MAX_VALUE : -Number.MAX_VALUE;
+  }
+
+  return sum === 0 ? 0 : sum;
 }
 
 function subtract(a, b) {
@@ -58,17 +89,6 @@ function fibonacci(n) {
   }
   return curr;
 }
-
-const toFiniteNumber = logger.wrap(function toFiniteNumber(value) {
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : NaN;
-  }
-  if (typeof value === 'string' && value.trim() !== '') {
-    const num = Number(value);
-    return Number.isFinite(num) ? num : NaN;
-  }
-  return NaN;
-}, { name: 'toFiniteNumber' });
 
 function modulo(a, b) {
   const dividend = toFiniteNumber(a);

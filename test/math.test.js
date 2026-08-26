@@ -11,6 +11,49 @@ test('add adds two numbers', () => {
   assert.equal(math.add(0, 0), 0);
 });
 
+test('add preserves decimal precision', () => {
+  assert.equal(math.add(1.5, 2.25), 3.75);
+});
+
+test('add accepts negative numbers and zero', () => {
+  assert.equal(math.add(-4, 6), 2);
+  assert.equal(math.add(0, 7), 7);
+});
+
+test('add accepts numeric strings', () => {
+  assert.equal(math.add('2', '3'), 5);
+  assert.equal(math.add('1.5', '2.25'), 3.75);
+});
+
+test('add returns a number', () => {
+  assert.equal(typeof math.add(2, 3), 'number');
+  assert.equal(typeof math.add('2', '3'), 'number');
+});
+
+test('add handles large numbers without crashing', () => {
+  const largeSum = math.add(1e308, 1e308);
+  assert.equal(typeof largeSum, 'number');
+  assert.ok(Number.isFinite(largeSum));
+  assert.equal(math.add(Number.MAX_SAFE_INTEGER, 1), Number.MAX_SAFE_INTEGER + 1);
+});
+
+test('add throws an Error for non-numeric inputs', () => {
+  assert.throws(() => math.add('a', 2), /numeric/);
+  assert.throws(() => math.add(2, 'a'), /numeric/);
+  assert.throws(() => math.add(NaN, 2), /numeric/);
+  assert.throws(() => math.add(2, NaN), /numeric/);
+  assert.throws(() => math.add(Infinity, 2), /numeric/);
+  assert.throws(() => math.add(2, Infinity), /numeric/);
+});
+
+test('add throws an Error for missing or null inputs', () => {
+  assert.throws(() => math.add(), /numeric/);
+  assert.throws(() => math.add(2), /numeric/);
+  assert.throws(() => math.add(null, 2), /numeric/);
+  assert.throws(() => math.add(2, null), /numeric/);
+  assert.throws(() => math.add(undefined, 2), /numeric/);
+});
+
 test('subtract subtracts two numbers', () => {
   assert.equal(math.subtract(5, 3), 2);
   assert.equal(math.subtract(2, 5), -3);
