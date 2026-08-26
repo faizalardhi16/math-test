@@ -1,6 +1,9 @@
 'use strict';
 
 const { formatIDR } = require('./idr');
+const { createLogger } = require('./logger');
+
+const logger = createLogger();
 
 function escapePdfString(value) {
   const bs = String.fromCharCode(92);
@@ -158,8 +161,8 @@ function buildMonthlyReportPdf(report) {
 }
 
 module.exports = {
-  buildMonthlyReportPdf,
-  generateMonthlyReportPdf: buildMonthlyReportPdf,
-  buildPdf,
-  escapePdfString,
+  buildMonthlyReportPdf: logger.wrap(buildMonthlyReportPdf, { name: 'buildMonthlyReportPdf' }),
+  generateMonthlyReportPdf: logger.wrap(buildMonthlyReportPdf, { name: 'buildMonthlyReportPdf' }),
+  buildPdf: logger.wrap(buildPdf, { name: 'buildPdf' }),
+  escapePdfString: logger.wrap(escapePdfString, { name: 'escapePdfString' }),
 };

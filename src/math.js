@@ -4,7 +4,7 @@ const { createLogger } = require('./logger');
 
 const logger = createLogger();
 
-const toFiniteNumber = logger.wrap(function toFiniteNumber(value) {
+function _toFiniteNumber(value) {
   if (typeof value === 'number') {
     return Number.isFinite(value) ? value : NaN;
   }
@@ -13,18 +13,13 @@ const toFiniteNumber = logger.wrap(function toFiniteNumber(value) {
     return Number.isFinite(num) ? num : NaN;
   }
   return NaN;
-}, { name: 'toFiniteNumber' });
+}
 
-/**
- * Adds two numeric values and returns the sum.
- *
- * Accepts finite numbers and numeric strings. Throws a TypeError for
- * missing, null, or non-numeric inputs. If the sum overflows the maximum
- * finite number, the closest finite approximation is returned.
- */
+const toFiniteNumber = logger.wrap(_toFiniteNumber, { name: 'toFiniteNumber' });
+
 function add(a, b) {
-  const numA = toFiniteNumber(a);
-  const numB = toFiniteNumber(b);
+  const numA = _toFiniteNumber(a);
+  const numB = _toFiniteNumber(b);
 
   if (!Number.isFinite(numA) || !Number.isFinite(numB)) {
     throw new TypeError('add expects two numeric values');

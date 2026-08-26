@@ -1,5 +1,9 @@
 'use strict';
 
+const { createLogger } = require('./logger');
+
+const logger = createLogger();
+
 function getDateParts(date, timeZone) {
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone,
@@ -92,14 +96,14 @@ function getReportPeriodForDate(date, timeZone) {
 }
 
 module.exports = {
-  getDateParts,
-  getPeriodFromDate,
-  getPreviousPeriod,
-  getNextPeriod,
-  getDaysInMonth,
-  getMonthRange,
-  getFirstWorkingDayOfMonth,
-  isFirstWorkingDayOfMonth,
-  isFirstBusinessDay: isFirstWorkingDayOfMonth,
-  getReportPeriodForDate,
+  getDateParts: logger.wrap(getDateParts, { name: 'getDateParts' }),
+  getPeriodFromDate: logger.wrap(getPeriodFromDate, { name: 'getPeriodFromDate' }),
+  getPreviousPeriod: logger.wrap(getPreviousPeriod, { name: 'getPreviousPeriod' }),
+  getNextPeriod: logger.wrap(getNextPeriod, { name: 'getNextPeriod' }),
+  getDaysInMonth: logger.wrap(getDaysInMonth, { name: 'getDaysInMonth' }),
+  getMonthRange: logger.wrap(getMonthRange, { name: 'getMonthRange' }),
+  getFirstWorkingDayOfMonth: logger.wrap(getFirstWorkingDayOfMonth, { name: 'getFirstWorkingDayOfMonth' }),
+  isFirstWorkingDayOfMonth: logger.wrap(isFirstWorkingDayOfMonth, { name: 'isFirstWorkingDayOfMonth' }),
+  isFirstBusinessDay: logger.wrap(isFirstWorkingDayOfMonth, { name: 'isFirstWorkingDayOfMonth' }),
+  getReportPeriodForDate: logger.wrap(getReportPeriodForDate, { name: 'getReportPeriodForDate' }),
 };

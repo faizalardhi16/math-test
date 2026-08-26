@@ -10,6 +10,9 @@ const {
   getDaysInMonth,
   isFirstWorkingDayOfMonth,
 } = require('./business-calendar');
+const { createLogger } = require('./logger');
+
+const logger = createLogger();
 
 function isValidPeriod(period) {
   if (typeof period !== 'string') return false;
@@ -335,21 +338,21 @@ function createMonthlyReportSystem(options = {}) {
   }
 
   return {
-    recordTransaction,
-    addRecipient,
-    removeRecipient,
-    setRecipients,
-    listRecipients,
-    markClosingFinal,
-    isClosingFinal,
-    generateReport,
-    generateDueReports,
-    isReportDue,
-    getReport,
-    getReportPdf,
-    downloadReport,
-    listReports,
-    getDashboardViewModel,
+    recordTransaction: logger.wrap(recordTransaction, { name: 'recordTransaction' }),
+    addRecipient: logger.wrap(addRecipient, { name: 'addRecipient' }),
+    removeRecipient: logger.wrap(removeRecipient, { name: 'removeRecipient' }),
+    setRecipients: logger.wrap(setRecipients, { name: 'setRecipients' }),
+    listRecipients: logger.wrap(listRecipients, { name: 'listRecipients' }),
+    markClosingFinal: logger.wrap(markClosingFinal, { name: 'markClosingFinal' }),
+    isClosingFinal: logger.wrap(isClosingFinal, { name: 'isClosingFinal' }),
+    generateReport: logger.wrap(generateReport, { name: 'generateReport' }),
+    generateDueReports: logger.wrap(generateDueReports, { name: 'generateDueReports' }),
+    isReportDue: logger.wrap(isReportDue, { name: 'isReportDue' }),
+    getReport: logger.wrap(getReport, { name: 'getReport' }),
+    getReportPdf: logger.wrap(getReportPdf, { name: 'getReportPdf' }),
+    downloadReport: logger.wrap(downloadReport, { name: 'downloadReport' }),
+    listReports: logger.wrap(listReports, { name: 'listReports' }),
+    getDashboardViewModel: logger.wrap(getDashboardViewModel, { name: 'getDashboardViewModel' }),
   };
 }
 
@@ -366,7 +369,7 @@ function generateMonthlyReport(transactions, options = {}) {
 
 module.exports = {
   createMonthlyReportSystem,
-  generateMonthlyReport,
+  generateMonthlyReport: logger.wrap(generateMonthlyReport, { name: 'generateMonthlyReport' }),
   formatIDR,
   formatNumber,
 };

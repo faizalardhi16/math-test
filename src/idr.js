@@ -1,5 +1,9 @@
 'use strict';
 
+const { createLogger } = require('./logger');
+
+const logger = createLogger();
+
 function addThousandsSeparators(digits) {
   let result = '';
   for (let i = 0; i < digits.length; i++) {
@@ -36,7 +40,7 @@ function formatNumber(value) {
 }
 
 module.exports = {
-  formatIDR,
-  formatRupiah: formatIDR,
-  formatNumber,
+  formatIDR: logger.wrap(formatIDR, { name: 'formatIDR' }),
+  formatRupiah: logger.wrap(formatIDR, { name: 'formatIDR' }),
+  formatNumber: logger.wrap(formatNumber, { name: 'formatNumber' }),
 };
